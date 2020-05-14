@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head> 
+<meta charset="utf-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+<title>基于三元组的九型人格测试</title> 
+</head>
+<body>
+	<h1>基于三元组的九型人格测试 Beta v0.1</h1>
+	<p>以下选项<b>没有</b>对错、好坏之分，请凭第一感觉选择自己最符合的一项。<br /></p>
+	<p id="quiz">
+	</p>
+	<button type="button" onclick="submit()">提交</button>
+	<p id="rt"></p>
+	<canvas id="res" width="600" height="500" style="border:0px solid #ffffff;">
+		您的浏览器版本过低，不支持 Canvas 作图。
+	</canvas>
+	<canvas id="trig" style="border:0px solid #ffffff;">
+		您的浏览器版本过低，不支持 Canvas 作图。
+	</canvas>
+	<p id="link"></p>
+	
+<script>
+	
+	var ch=[
+		//中心三元组：腹区、心区、脑区
+		['有界限感，希望能保护自己与他人的界限，不想被越界',
+		 '渴望吸引别人注意力，被别人喜欢',
+		 '有不安全感，希望得到环境的支援'
+		],
+		['遇事第一反应是调动自己的本能',
+		 '遇事第一反应是调动自己的情感',
+		 '遇事第一反应是动脑思考'
+		],
+		['直觉很强，本能地知道什么是对的什么是错的',
+		 '沉浸在感受里，用感觉来判断对错',
+		 '广泛地搜索信息、对信息进行加工，用思考来判断对错'
+		],
+		['重视如何生存的问题，知道优劣胜败，适者生存',
+		 '在乎与人的相处关系，关心别人，跟人容易亲密',
+		 '相信抽象的知识及科学上能证明的理论'
+		],
+		//情绪三元组：积极、反应、能力
+		['遇事第一反应是尽量往好处想，认为一定可以化解',
+		 '遇事第一反应是将情绪完全发泄出来，并期待对方和自己一样有情绪反应',
+		 '第一反应是尽量克制内心的情绪，并要求自己保持冷静与理性的态度解决问题'
+		],
+		['乐意帮助别人保持积极乐观的态度，安抚他人的不愉快',
+		 '当对方保持冷静或反应低调，你会认为对方不在乎自己和问题，从而容易失去理智',
+		 '遇到问题时希望对方能够理性地来进行讨论与协调，把个人的情绪与感受放到一边'
+		],
+		['在满足自己与满足他人需要之间失衡',
+		 '在想要照顾他人与想被他人照顾之间失衡',
+		 '遵守团体规则与违背团体规则之间失衡'
+		],
+		['不愿意承认自己的问题，回避负面与阴暗的自我评价',
+		 '只有在情绪得到适当宣泄或安抚后，才能恢复理智',
+		 '强迫自己要客观并且有效率地面对问题，压抑自己的情绪和感受'
+		],
+		//能量三元组：退缩、进攻、屈从
+		['当欲望不能满足时，躲进内心世界，运用思考、幻想和白日梦来安抚内心的失落',
+		 '当欲望不能满足时，绝不退缩放弃，也不会躲到他人背后求支援，而是更强势地争取',
+		 '当欲望不能满足时，转变世俗道德标准与社会规范，符合“超我”的期待'
+		],
+		['自认为和别人不一样，是局外人，经常觉得自己与当下发生的事无关',
+		 '自认是团体的中心，是有权力、有影响力的人',
+		 '自认为是优秀的、进步的和负责任的，是为他人和团体负责的“好人”'
+		],
+		['容易逃离现实，以想象取代行动，容易对不喜欢做的事情拖延',
+		 '总想主导和推动环境的发展和事物的进展',
+		 '比较受传统束缚，强调责任和义务，且喜欢讲道理'
+		],
+		['喜欢躲进个人空间，做自己喜欢做的事',
+		 '对于内心的情感，不是否认就是压抑不让别人看到',
+		 '普遍看不清楚自我的价值'
+		],
+		//关系三元组：认同、沮丧、拒绝
+		['为了适应环境，愿意灵活调整自己，向环境和他人忍受、妥协',
+		 '比较自我，不愿适应环境和妥协，容易不切实际地强烈坚持自己的主张以及自认为重要而美好的东西',
+		 '对自己强调独立自主，自力更生，避免依赖他人'
+		],
+		['对所认同的人和事物保持一种稳定关系',
+		 '找不到自己真正想要的东西，容易经历“失望-追逐或改革-失望”的循环，一旦得到便容易失去兴趣',
+		 '通过为别人提供服务、能力和资源，避免被自己所认同的人或物拒绝'
+		],
+		['坚持把握能满足自己需要的事物',
+		 '对需求没有得到足够关注、满足而感到失望',
+		 '压抑自己的脆弱和真正的需要，希望自己是有能力的'
+		],
+		['着重于环境与现实',
+		 '着重于自我与理想',
+		 '着重于行动与付出'
+		]];	
+	
+	var stem='你倾向于以下哪种：';
+	var grn=12,typen=9,len=4,ppt=4,tol=2;
+	var cor=[[0, 1,0,0, 0,0,0, 0,1,1],
+			 [0, 0,1,1, 1,0,0, 0,0,0],
+			 [0, 0,0,0, 0,1,1, 1,0,0],
+			 [0, 0,1,0, 0,0,0, 1,0,1],
+			 [0, 0,0,0, 1,0,1, 0,1,0],
+			 [0, 1,0,1, 0,1,0, 0,0,0],
+			 [0, 0,0,0, 1,1,0, 0,0,1],
+			 [0, 0,0,1, 0,0,0, 1,1,0],
+			 [0, 1,1,0, 0,0,1, 0,0,0],
+			 [0, 0,0,1, 0,0,1, 0,0,1],
+			 [0, 1,0,0, 1,0,0, 1,0,0],
+			 [0, 0,1,0, 0,1,0, 0,1,0]];
+	var probs=new Array(),chs=new Array();;
+	var i,j,k,l,tmp;
+	var types=['',
+			   '第一型（完美型）','第二型（助人型）','第三型（成就型）',
+			   '第四型（艺术型）','第五型（理智型）','第六型（忠诚型）',
+			   '第七型（快乐型）','第八型（领袖型）','第九型（和平型）'];
+	var tends;
+	var likelihood;
+	var type;
+	for (i=0;i<len;i++)
+	{
+		for (j=0;j<ppt;j++)
+		{
+			k=i*ppt+j;
+			for(l=0;l<3;l++){
+				tmp=i*3+l;
+				chs[l]='<input type="radio" name="ans" value=' + tmp.toString() + '>' + ch[k][l] + '<br />';
+			}
+			l=Math.floor(Math.random()*3);
+			tmp=chs[2];chs[2]=chs[l];chs[l]=tmp;
+			l=Math.floor(Math.random()*2);
+			tmp=chs[1];chs[1]=chs[l];chs[l]=tmp;
+			probs[k]= stem + '<br />\n<form name="p' + k.toString() + '">\n'
+			+ chs[0] + chs[1] + chs[2] + '\n</form><br />';
+			
+		}
+	}
+	for (i=len*ppt-1;i>0;i--)
+	{
+		j = Math.floor(Math.random()*(i+1));
+		tmp = probs[j];
+		probs[j] = probs[i];
+		probs[i] = tmp;
+	}
+	for (i=0;i<len*ppt;i++)
+	{
+		tmp = i + 1;
+		probs[i] = tmp.toString() + "、" + probs[i] + "\n";
+	}
+	var txt = probs.join("");
+	document.getElementById("quiz").innerHTML = txt;
+	
+function drawEquiTrig(ctx, x, y, size, col){
+	var sqrt3d2=Math.sqrt(3)/2;
+	ctx.moveTo(x+size*0.5,y);
+	ctx.lineTo(x,y-size*sqrt3d2);
+	ctx.lineTo(x-size*0.5,y);
+	ctx.lineTo(x+size*0.5,y);
+	ctx.fillStyle=col;
+	ctx.fill();
+}
+	
+function drawBar(ctx, x, y, wid, h, col0, col1, val, tot){
+	var rat=val/tot;
+	var grd=ctx.createLinearGradient(x,y,x,y-h);
+	grd.addColorStop(0,col0);
+	grd.addColorStop(1,col1);
+	ctx.fillStyle=grd;
+	ctx.fillRect(x,y-h*rat,wid,h*rat);
+}
+	
+function drawTrigPhase(ctx, x, y, size, col, val1, val2, val3, col2, rad, txt1, txt2, txt3, font, genhoffset, voffset, hoffset){
+	var sqrt3d2=Math.sqrt(3)/2;
+	drawEquiTrig(ctx,x,y+rad,size+rad*3/sqrt3d2,col);
+	var totVal=val1+val2+val3;
+	if(totVal==0){rat1=1/3;rat2=1/3;rat3=1/3;}
+	else{
+		var rat1=val1/totVal
+		var rat2=val2/totVal;
+		var rat3=val3/totVal;
+	}
+	var px,py;
+	px = x - rat2*size*0.5 + rat3*size*0.5;
+	py = y - rat1*size*sqrt3d2;
+	ctx.arc(px,py,rad,0,2*Math.PI);
+	ctx.fillStyle=col2;
+	ctx.fill();
+	ctx.fillStyle="#000000";
+	ctx.font=font;
+	ctx.fillText(txt1,x+genhoffset,y-size*sqrt3d2-voffset);
+	ctx.fillText(txt2,x-size*0.5-hoffset+genhoffset,y);
+	ctx.fillText(txt3,x+size*0.5+hoffset+genhoffset,y);
+}
+
+function plotTrig(id,a){
+	var c=document.getElementById(id);
+	var ctx=c.getContext("2d");
+	var w = ctx.canvas.width = Math.min(document.documentElement.clientWidth,1000);
+	var unit=w/600;
+	var fontsize=unit*10;
+	ctx.canvas.height = 500*unit;
+	drawTrigPhase(ctx,140*unit,200*unit,180*unit,"#000000",a[0],a[2],a[1],"#66CCFF",5*unit,"腹区","脑区","心区",fontsize.toString()+"pt sans-serif",
+				  -14*unit,20*unit,28*unit);
+	drawTrigPhase(ctx,460*unit,200*unit,180*unit,"#000000",a[3],a[5],a[4],"#66CCFF",5*unit,"积极","能力","反应",fontsize.toString()+"pt sans-serif",
+				  -14*unit,20*unit,28*unit);
+	drawTrigPhase(ctx,140*unit,450*unit,180*unit,"#000000",a[6],a[8],a[7],"#66CCFF",5*unit,"退缩","屈从","进攻",fontsize.toString()+"pt sans-serif",
+				  -14*unit,20*unit,28*unit);
+	drawTrigPhase(ctx,460*unit,450*unit,180*unit,"#000000",a[9],a[11],a[10],"#66CCFF",5*unit,"认同","拒绝","沮丧",fontsize.toString()+"pt sans-serif",
+				  -14*unit,20*unit,28*unit);
+}
+	
+function plotBars(id,a,full,par){
+	var c=document.getElementById(id);
+    var ctx=c.getContext("2d");
+    var w = ctx.canvas.width = Math.min(document.documentElement.clientWidth,1000);
+    var unit=w/600;
+    var fontsize=unit*20;
+	var fontsize2=unit*14;
+    ctx.canvas.height = 500*unit;
+	var bot=400,hei=350,lwr=2.0;
+	var offset1;
+	var c1=['','#666666','#CC0066','#CC3300','#660099','#0000FF','#996633','#009999','#990000','#009900'];
+	var c0=['','#DDDDDD','#FFBBDD','#FFEEAA','#DDBBFF','#BBDDFF','#EEEEBB','#BBFFFF','#FFCCCC','#CCFFCC'];
+//	var grd1=ctx.createLinearGradient(0,bot*unit,0,(bot-hei)*unit);
+//	grd1.addColorStop(0,"#000000");
+//	grd1.addColorStop(1,"#000000");
+	ctx.strokeStyle="#999999";
+	ctx.lineWidth=1;
+	for (var tmp1=bot-hei;tmp1<bot;tmp1+=hei/par)
+	{
+		ctx.moveTo(30*unit,tmp1*unit);
+		ctx.lineTo(570*unit,tmp1*unit);
+		ctx.stroke();
+	}
+	ctx.moveTo(30*unit,(bot-hei)*unit);
+	ctx.lineTo(30*unit,bot*unit+ctx.lineWidth/2);
+	ctx.lineTo(570*unit,bot*unit+ctx.lineWidth/2);
+	ctx.lineTo(570*unit,(bot-hei)*unit);
+	ctx.stroke();
+//	ctx.lineWidth/=lwr;
+	ctx.strokeStyle="#000000";
+	for (var i=1;i<=9;i++)
+	{
+		ctx.fillStyle=c1[i];
+		ctx.font=fontsize.toString()+'pt sans-serif';
+		ctx.fillText(i.toString(),(60*i-6)*unit,450*unit);
+		ctx.font=fontsize2.toString()+'pt sans-serif';
+		offset1=-5.5-5*Math.floor(Math.log(Math.max(a[i],1))/Math.log(10))
+		ctx.fillText(a[i].toString(),(60*i+offset1)*unit,(bot-a[i]/full*hei-10)*unit);
+		drawBar(ctx,(60*i-15)*unit,bot*unit,30*unit,hei*unit,c0[i],c1[i],a[i],full);
+	}
+}
+	
+function submit(){
+	tends=[0,0,0, 0,0,0, 0,0,0, 0,0,0];
+	for (k=0;k<len*ppt;k++)
+	{
+		if(document.forms["p"+k.toString()]["ans"].value!='')
+		{tends[Number(document.forms["p"+k.toString()]["ans"].value)]++};
+	}
+	likelihood=[0,0,0,0,0,0,0,0,0,0];
+	for (i=0;i<grn;i++)
+	for (type=1;type<=typen;type++)
+	{
+		likelihood[type]+=cor[i][type]*tends[i];
+	}
+	var output='你最有可能是：';
+	var max=0,bj=0;
+	for (type=1;type<=typen;type++)
+	if (likelihood[type]>max){max=likelihood[type];}
+	for (type=1;type<=typen;type++)
+	if (likelihood[type]==max)
+	{
+		if(bj==1){output+='、';}
+		output+=types[type];
+		bj=1;
+	}
+	bj=0;
+	for (type=1;type<=typen;type++)
+	if (likelihood[type]<max && likelihood[type]>=max-tol)
+	{
+		if(bj==1){output+='、';}else{output+='<br />你也有可能是：';}
+		output+=types[type];
+		bj=1;
+	}
+	document.getElementById("rt").innerHTML = output;
+	plotBars("res",likelihood,len*ppt,8);
+	plotTrig("trig",tends);
+	document.getElementById("link").innerHTML = '中心三元组：脑区组567、腹区组891、心区组234<br />\
+	情绪三元组：能力组135、积极组792、反应组468<br />\
+	能量三元组：屈从组261、退缩组594、进攻组837<br />\
+	关系三元组：拒绝组582、认同组693、沮丧组714<br />更多资料可参考<a href="http://www.jxrgw.com/jichu/baike/398.html">这里</a>。';
+}
+
+//plotTrig("trig",[6,0,2,5,0,3,8,0,0,1,4,3]);
+//plotBars("res",[0,13,8,4,12,16,3,11,9,20],32,8);
+//	plotBars("res",[0,9,8,8,9,10,8,9,8,10],10,5);
+</script>
+
+</body>
+</html>
